@@ -33,7 +33,7 @@ export class DetailPage implements OnInit, OnDestroy {
 
   @ViewChild(CdkVirtualScrollViewport) scrollViewPort: CdkVirtualScrollViewport;
 
-  itemSize = 56;
+  itemSize = 200;
 
   pageEndBuffer = this.itemSize * 10;
 

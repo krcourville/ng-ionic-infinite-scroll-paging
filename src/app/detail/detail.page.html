@@ -21,11 +21,11 @@
         -->
 
         <ng-container *ngIf="item.type === 'header';else personTemplate">
-          <ion-list-header>{{item.caption}}</ion-list-header>
+          <ion-list-header style="background-color: silver;">{{item.caption}}</ion-list-header>
         </ng-container>
 
         <ng-template #personTemplate>
-          <ion-item>
+          <ion-item style="height: 200px; border: 1px green solid">
             <ion-avatar slot="start">
               <img src="https://loremflickr.com/40/40" />
             </ion-avatar>
