@@ -57,9 +57,8 @@ export class DetailPage implements OnInit, OnDestroy {
   loadNextPage(event) {
     this.fetchPage(this.nextPage)
       .pipe(
-        tap((res) => {
+        tap(() => {
           event.target.complete();
-          this.endOfData = res.count === 0;
           event.target.disabled = this.endOfData;
         })
       )
@@ -81,6 +80,8 @@ export class DetailPage implements OnInit, OnDestroy {
         }
         console.log("FETCH complete");
         this.fetching = false;
+        this.endOfData = res.next == null;
+        console.log("end", this.endOfData);
         this.nextPage++;
       })
     );
