@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      People - NextPage: {{nextPage}}
+      <span class="blink" *ngIf="fetching">- fetching</span>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [scrollY]="false">
+  <cdk-virtual-scroll-viewport cdkScrollable class="ion-content-scroll-host" itemSize="itemSize" minBufferPx="900"
+    maxBufferPx="1350">
+    <ion-list>
+      <ion-item *cdkVirtualFor="let item of people; trackBy: trackPerson">
+        <ion-avatar slot="start">
+          <img src="https://loremflickr.com/40/40" />
+        </ion-avatar>
+        <ion-label>{{item.name}}</ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-infinite-scroll (ionInfinite)="loadNextPage($event)">
+      <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more people...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </cdk-virtual-scroll-viewport>
+</ion-content>
