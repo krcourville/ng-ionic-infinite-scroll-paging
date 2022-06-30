@@ -15,7 +15,9 @@
 
         <!--
           NOTES: This seems to work ok, possibly because of a small-ish data set
-          and the height of item (56px) vs header (45px) being pretty close
+          and the height of item (56px) vs header (45px) being pretty close.
+          A workaround, if design allows may be to increase whitespace of the header
+          so that the height of headers matches that of the items.
         -->
 
         <ng-container *ngIf="item.type === 'header';else personTemplate">

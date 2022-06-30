@@ -71,7 +71,7 @@ export class DetailPage implements OnInit, OnDestroy {
       .pipe(
         tap(() => {
           event.target.complete();
-          // event.target.disabled = this.endOfData;
+          event.target.disabled = this.endOfData;
         })
       )
       .subscribe();
@@ -104,14 +104,8 @@ export class DetailPage implements OnInit, OnDestroy {
         }
         console.log("FETCH complete");
         this.fetching = false;
-        const endOfData = res.next == null;
-
-        if (endOfData) {
-          console.log("end", this.endOfData);
-          this.nextPage = 1;
-        } else {
-          this.nextPage++;
-        }
+        this.endOfData = res.next == null;
+        this.nextPage++;
       })
     );
   }
