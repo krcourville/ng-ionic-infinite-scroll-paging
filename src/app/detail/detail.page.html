@@ -11,12 +11,27 @@
   <cdk-virtual-scroll-viewport cdkScrollable class="ion-content-scroll-host" itemSize="itemSize" minBufferPx="900"
     maxBufferPx="1350">
     <ion-list>
-      <ion-item *cdkVirtualFor="let item of people; trackBy: trackPerson">
-        <ion-avatar slot="start">
-          <img src="https://loremflickr.com/40/40" />
-        </ion-avatar>
-        <ion-label>{{item.name}}</ion-label>
-      </ion-item>
+      <ng-container *cdkVirtualFor="let item of items; trackBy: trackItem">
+
+        <!--
+          NOTES: This seems to work ok, possibly because of a small-ish data set
+          and the height of item (56px) vs header (45px) being pretty close
+        -->
+
+        <ng-container *ngIf="item.type === 'header';else personTemplate">
+          <ion-list-header>{{item.caption}}</ion-list-header>
+        </ng-container>
+
+        <ng-template #personTemplate>
+          <ion-item>
+            <ion-avatar slot="start">
+              <img src="https://loremflickr.com/40/40" />
+            </ion-avatar>
+            <ion-label>{{item.name}}</ion-label>
+          </ion-item>
+        </ng-template>
+
+      </ng-container>
     </ion-list>
     <ion-infinite-scroll (ionInfinite)="loadNextPage($event)">
       <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more people...">

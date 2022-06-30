@@ -1,5 +1,11 @@
 import range from "lodash/range";
-import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
+import random from "lodash/random";
+import flatten from "lodash/flatten";
+
+import {
+  CdkVirtualScrollViewport,
+  VirtualScrollStrategy,
+} from "@angular/cdk/scrolling";
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { IonInfiniteScroll } from "@ionic/angular";
 import { concat, of, Subscription } from "rxjs";
@@ -12,6 +18,10 @@ import { Person, SwapiClient } from "../api-clients/swapi-client";
  * better solutions?
  */
 const INITIAL_PAGES_TO_LOAD = 3;
+
+type HeaderItem = { type: "header"; caption: string };
+type PersonItem = { type: "person"; name: string };
+type Item = PersonItem | HeaderItem;
 
 @Component({
   selector: "app-detail",
@@ -27,7 +37,7 @@ export class DetailPage implements OnInit, OnDestroy {
 
   pageEndBuffer = this.itemSize * 10;
 
-  people: Person[] = [];
+  items: Item[] = [];
 
   nextPage = 1;
 
@@ -50,8 +60,10 @@ export class DetailPage implements OnInit, OnDestroy {
     this.subscribes.forEach((s) => s.unsubscribe());
   }
 
-  trackPerson(_idx: number, person: Person) {
-    return person.name;
+  trackItem(_idx: number, item: Item) {
+    return item.type === "header"
+      ? `header-${item.caption}`
+      : `person-${item.name}`;
   }
 
   loadNextPage(event) {
@@ -59,7 +71,7 @@ export class DetailPage implements OnInit, OnDestroy {
       .pipe(
         tap(() => {
           event.target.complete();
-          event.target.disabled = this.endOfData;
+          // event.target.disabled = this.endOfData;
         })
       )
       .subscribe();
@@ -76,13 +88,30 @@ export class DetailPage implements OnInit, OnDestroy {
       tap((res) => {
         console.log("APPENDING DATA...");
         if (res.results.length > 0) {
-          this.people = [...this.people, ...res.results];
+          const next: Item[][] = res.results.map((m) => {
+            return [
+              random(7) === 7
+                ? <HeaderItem>{ type: "header", caption: "Header Test" }
+                : null,
+              <PersonItem>{
+                type: "person",
+                name: m.name,
+              },
+            ];
+          });
+          const cleaned = flatten(next).filter((f) => f != null);
+          this.items = [...this.items, ...cleaned];
         }
         console.log("FETCH complete");
         this.fetching = false;
-        this.endOfData = res.next == null;
-        console.log("end", this.endOfData);
-        this.nextPage++;
+        const endOfData = res.next == null;
+
+        if (endOfData) {
+          console.log("end", this.endOfData);
+          this.nextPage = 1;
+        } else {
+          this.nextPage++;
+        }
       })
     );
   }
