@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      People - NextPage: {{nextPage}}
+      Items Loaded: {{items.length}}
       <span class="blink" *ngIf="fetching">- fetching</span>
     </ion-title>
   </ion-toolbar>
@@ -21,22 +21,29 @@
         -->
 
         <ng-container *ngIf="item.type === 'header';else personTemplate">
-          <ion-list-header style="background-color: silver;">{{item.caption}}</ion-list-header>
+          <ion-list-header style="background-color: silver;">{{item.caption | date: "shortDate"}}</ion-list-header>
         </ng-container>
 
         <ng-template #personTemplate>
-          <ion-item style="height: 200px; border: 1px green solid">
+          <ion-item>
             <ion-avatar slot="start">
               <img src="https://loremflickr.com/40/40" />
             </ion-avatar>
-            <ion-label>{{item.name}}</ion-label>
+            <ion-label>
+              <h3>
+                {{item.subject}}
+              </h3>
+              <p>
+                {{item.start | date: "short" }} &dash; {{item.end | date: "shortTime"}} ({{item.duration}}m)
+              </p>
+            </ion-label>
           </ion-item>
         </ng-template>
 
       </ng-container>
     </ion-list>
-    <ion-infinite-scroll (ionInfinite)="loadNextPage($event)">
-      <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more people...">
+    <ion-infinite-scroll (ionInfinite)="loadNextPage($event)" threshold="50%">
+      <ion-infinite-scroll-content>
       </ion-infinite-scroll-content>
     </ion-infinite-scroll>
   </cdk-virtual-scroll-viewport>

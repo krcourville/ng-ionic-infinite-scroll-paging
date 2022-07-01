@@ -1,16 +1,17 @@
 import range from "lodash/range";
-import random from "lodash/random";
 import flatten from "lodash/flatten";
 
-import {
-  CdkVirtualScrollViewport,
-  VirtualScrollStrategy,
-} from "@angular/cdk/scrolling";
+import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { IonInfiniteScroll } from "@ionic/angular";
 import { concat, of, Subscription } from "rxjs";
 import { tap } from "rxjs/operators";
-import { Person, SwapiClient } from "../api-clients/swapi-client";
+import {
+  FakeApiClient,
+  Event as EventData,
+} from "../api-clients/fake-api-client";
+
+import { compareAsc } from "date-fns";
 
 /**
  * Buffer up this many pages of data to start
@@ -19,9 +20,9 @@ import { Person, SwapiClient } from "../api-clients/swapi-client";
  */
 const INITIAL_PAGES_TO_LOAD = 3;
 
-type HeaderItem = { type: "header"; caption: string };
-type PersonItem = { type: "person"; name: string };
-type Item = PersonItem | HeaderItem;
+type HeaderItem = { type: "header"; caption: Date };
+type EventItem = EventData & { type: "event" };
+type ListItem = EventItem | HeaderItem;
 
 @Component({
   selector: "app-detail",
@@ -37,7 +38,7 @@ export class DetailPage implements OnInit, OnDestroy {
 
   pageEndBuffer = this.itemSize * 10;
 
-  items: Item[] = [];
+  items: ListItem[] = [];
 
   nextPage = 1;
 
@@ -47,7 +48,9 @@ export class DetailPage implements OnInit, OnDestroy {
 
   subscribes: Subscription[] = [];
 
-  constructor(private swapiClient: SwapiClient) {}
+  lastDateHeader: Date | null = null;
+
+  constructor(private api: FakeApiClient) {}
 
   ngOnInit(): void {
     const initialFetches = range(INITIAL_PAGES_TO_LOAD).map((idx: number) =>
@@ -60,10 +63,10 @@ export class DetailPage implements OnInit, OnDestroy {
     this.subscribes.forEach((s) => s.unsubscribe());
   }
 
-  trackItem(_idx: number, item: Item) {
+  trackItem(_idx: number, item: ListItem) {
     return item.type === "header"
       ? `header-${item.caption}`
-      : `person-${item.name}`;
+      : `person-${item.id}`;
   }
 
   loadNextPage(event) {
@@ -84,28 +87,39 @@ export class DetailPage implements OnInit, OnDestroy {
 
     this.fetching = true;
     console.log("FETCHING", page);
-    return this.swapiClient.getPeople(page).pipe(
+
+    return this.api.getEvents().pipe(
       tap((res) => {
         console.log("APPENDING DATA...");
         if (res.results.length > 0) {
-          const next: Item[][] = res.results.map((m) => {
-            return [
-              random(7) === 7
-                ? <HeaderItem>{ type: "header", caption: "Header Test" }
-                : null,
-              <PersonItem>{
-                type: "person",
-                name: m.name,
+          const next: ListItem[][] = res.results.map((item) => {
+            const result: ListItem[] = [
+              <EventItem>{
+                ...item,
+                type: "event",
               },
             ];
+
+            const addHeader =
+              this.lastDateHeader == null ||
+              0 !== compareAsc(this.lastDateHeader, item.date);
+
+            if (addHeader) {
+              result.unshift(<HeaderItem>{
+                type: "header",
+                caption: item.date,
+              });
+              this.lastDateHeader = item.date;
+            }
+
+            return result;
           });
-          const cleaned = flatten(next).filter((f) => f != null);
-          this.items = [...this.items, ...cleaned];
+          this.items = [...this.items, ...flatten(next)];
         }
         console.log("FETCH complete");
         this.fetching = false;
-        this.endOfData = res.next == null;
-        this.nextPage++;
+        // this.endOfData = res.next == null;
+        // this.nextPage++;
       })
     );
   }
