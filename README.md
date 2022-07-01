@@ -1,3 +1,3 @@
-# angular-ivy-dutubd
+# ng-ionic-infinite-scroll-paging
 
-[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/angular-ivy-dutubd)
+An experiment with scrolling, infinitely, with paging and headers.
